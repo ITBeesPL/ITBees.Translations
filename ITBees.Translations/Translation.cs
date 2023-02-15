@@ -2,7 +2,7 @@
 
 namespace ITBees.Translations
 {
-    public class Translation
+    public class Translations
     {
 
     }
