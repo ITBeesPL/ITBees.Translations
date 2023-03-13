@@ -5,4 +5,12 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Interfaces\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ITBees.BaseServices\ITBees.BaseServices\ITBees.BaseServices.csproj" />
+  </ItemGroup>
+
 </Project>
