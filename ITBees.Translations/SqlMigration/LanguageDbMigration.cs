@@ -12,7 +12,7 @@ namespace ITBees.Translations.SqlMigration
             foreach (var type in InheritedMapper.BaseClassHelper.GetAllDerivedClassesFromBaseClass(typeof(Language)))
             {
                 var instance = Activator.CreateInstance(type) as Language;
-                sb.AppendLine($"INSERT INTO Language (Id, Code, Name, LanguageType) VALUES ('{instance.Id}', '{instance.Code}','{instance.Name}', '{instance.GetType().Name}Type') ON DUPLICATE KEY UPDATE Name=Name; ");
+                sb.AppendLine($"INSERT INTO Language (Id, Code, Name, LanguageType, IsSupported) VALUES ('{instance.Id}', '{instance.Code}','{instance.Name}', '{instance.GetType().Name}Type', 0) ON DUPLICATE KEY UPDATE Name=Name; ");
             }
 
             return sb.ToString();
