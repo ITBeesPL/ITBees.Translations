@@ -17,7 +17,7 @@ namespace ITBees.Translations.UnitTests
         }
 
         [NonParallelizable]
-        //[Test]
+        [Test]
         public void Get_shouldReturnCorrectTranslatedValueForSpecifiedLanguage()
         {
             Translate.ClearTranslations();
@@ -31,13 +31,13 @@ namespace ITBees.Translations.UnitTests
 
             Translate.LoadFiles(languageFilesPath);
 
-            var translatedTextInPolish = Translate.Get(() => ITBees.Translations.Translations.TranslateMessages.InvalidExpression, new Pl());
+            var translatedTextInPolish = Translate.Get(() => TranslateSampleTestClass.TestField1, new Pl());
 
             Assert.True(translatedTextInPolish == polishTranslationValue, $"Expected translation was : {polishTranslationKeyAndValue}, but received {translatedTextInPolish}");
         }
 
         [NonParallelizable]
-        //[Test]
+        [Test]
         public void Get_shouldReturnCorrectTranslatedValueForSpecifiedLanguageInString()
         {
             Translate.ClearTranslations();
@@ -51,7 +51,7 @@ namespace ITBees.Translations.UnitTests
 
             Translate.LoadFiles(languageFilesPath);
 
-            var translatedTextInPolish = Translate.Get(() => ITBees.Translations.Translations.TranslateMessages.InvalidExpression, "pl");
+            var translatedTextInPolish = Translate.Get(() => TranslateSampleTestClass.TestField1, "pl");
 
             Assert.True(translatedTextInPolish == polishTranslationValue, $"Expected translation was : {polishTranslationKeyAndValue}, but received {translatedTextInPolish}");
         }
@@ -64,24 +64,24 @@ namespace ITBees.Translations.UnitTests
             Console.WriteLine(polishFileContent);
             var polishTranslationValue = @"Nie prawidlowa wartosc!";
             polishTranslationKeyAndValue =
-                @"ITBees.Translations.FAS.UserManager.NewUserRegistration.ToAddNewUserYouMustBeCompanyOwner"": """ +
+                @"ITBees.Translations.UnitTests.TranslateSampleTestClass.TestField1"": """ +
                 polishTranslationValue + @"""";
             polishFileContent = polishFileContent.Replace(
-                @"ITBees.Translations.FAS.UserManager.NewUserRegistration.ToAddNewUserYouMustBeCompanyOwner"": ""To add new user You must be company owner!""",
+                @"ITBees.Translations.UnitTests.TranslateSampleTestClass.TestField1"": ""TestField 1""",
                 polishTranslationKeyAndValue);
             File.WriteAllText(polishFilePath, polishFileContent);
             return polishTranslationValue;
         }
 
         [NonParallelizable]
-        //[Test]
+        [Test]
         public void TranslateGet_shouldThrowErrorTranslationsWasNotLoadedFirs()
         {
             Assert.Throws<Exception>(() => Translate.Get(() => "Test", new En()));
         }
 
         [NonParallelizable]
-        //[Test]
+        [Test]
         public void TranslateConfigure_shouldCreateFolderWithFiles()
         {
             var path = Path.Combine(Environment.CurrentDirectory, "i18n");
