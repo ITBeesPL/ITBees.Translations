@@ -40,6 +40,8 @@ namespace ITBees.Translations
                     .FirstOrDefault(x => x.Key.GetType() == language.GetType()).Value;
                 var translation = dictionary
                     .Where(val => val.Key == translateKey);
+                if (translation.Count() == 0)
+                    throw new Exception(ITBees.Translations.Translations.TranslateMessages.MissingTranslationForSpecifiedKey + $" key : {translateKey}, language :{language.Code}");
                 return translation.First().Value;
             }
 
