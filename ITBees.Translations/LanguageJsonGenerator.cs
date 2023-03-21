@@ -22,8 +22,9 @@ namespace ITBees.Translations
         /// <summary>
         /// For each language defined during class creation, it generates a file (e.g. en.json) containing all keys defined in the classes passed to the method.
         /// </summary>
-        /// <param name="translationClasses"></param>
-        public void CreateFiles(List<ITranslate> translationClasses)
+        /// <param name="translationClasses">Give all translation classes to be generated, remember that all this classes have to implement marker interface ITranslate and has specific structure described in documentation</param>
+        /// <param name="overrideTranslationFileIfExists">If target file ie. en.json already exists on disk it will be overwritten with default values, so be aware of possible data loss</param>
+        public void CreateFiles(List<ITranslate> translationClasses, bool overrideTranslationFileIfExists)
         {
             foreach (var language in _supportedLanguages)
             {
@@ -36,10 +37,13 @@ namespace ITBees.Translations
                 }
 
                 var path = Path.Combine(_languageFilesPath, $"{language.Code}.json");
-                if (new FileInfo(path).Exists)
+                if (new FileInfo(path).Exists && overrideTranslationFileIfExists)
                 {
                     File.Delete(path);
                 }
+
+                if(overrideTranslationFileIfExists == false)
+                    continue;
 
                 File.WriteAllText(path, rootObject.ToString());
             }

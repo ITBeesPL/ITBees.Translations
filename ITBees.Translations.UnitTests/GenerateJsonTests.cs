@@ -25,7 +25,7 @@ namespace ITBees.Translations.UnitTests
             var supportedLanguages = new List<Language>() { new En(), new Pl(), new De() };
             var generator = new LanguageJsonGenerator(languageFilesPath, supportedLanguages);
 
-            generator.CreateFiles(new List<ITranslate>() {new UserManager()});
+            generator.CreateFiles(new List<ITranslate>() {new UserManager()}, true);
 
             var generatedFilesCount = new DirectoryInfo(languageFilesPath).GetFiles("*.json").Length;
             Assert.True(generatedFilesCount == supportedLanguages.Count, $"Expected files to be generated : {supportedLanguages.Count} but was {generatedFilesCount}, debug folder : {languageFilesPath}");

@@ -25,12 +25,12 @@ namespace ITBees.Translations.UnitTests
             var generator = new LanguageJsonGenerator(languageFilesPath,
                 new List<Language>() { new En(), new Pl() });
 
-            generator.CreateFiles(new List<ITranslate>() { new UserManager(), new TranslateSampleTestClass()});
-            
+            generator.CreateFiles(new List<ITranslate>() { new UserManager(), new TranslateSampleTestClass() }, true);
+
             var polishTranslationValue = ReplaceTestValuesInTranslatedFileForSimulatingPolishTranslation(languageFilesPath, out var polishTranslationKeyAndValue);
 
             Translate.LoadFiles(languageFilesPath);
-            
+
             var translatedTextInPolish = Translate.Get(() => ITBees.Translations.FAS.UserManager.NewUserRegistration.ToAddNewUserYouMustBeCompanyOwner, new Pl());
 
             Assert.True(translatedTextInPolish == polishTranslationValue, $"Expected translation was : {polishTranslationKeyAndValue}, but received {translatedTextInPolish}");
@@ -45,7 +45,7 @@ namespace ITBees.Translations.UnitTests
             var generator = new LanguageJsonGenerator(languageFilesPath,
                 new List<Language>() { new En(), new Pl() });
 
-            generator.CreateFiles(new List<ITranslate>() { new UserManager(), new TranslateSampleTestClass() });
+            generator.CreateFiles(new List<ITranslate>() { new UserManager(), new TranslateSampleTestClass() }, true);
 
             var polishTranslationValue = ReplaceTestValuesInTranslatedFileForSimulatingPolishTranslation(languageFilesPath, out var polishTranslationKeyAndValue);
 
@@ -73,10 +73,27 @@ namespace ITBees.Translations.UnitTests
             return polishTranslationValue;
         }
 
+        [NonParallelizable]
         [Test]
         public void TranslateGet_shouldThrowErrorTranslationsWasNotLoadedFirs()
         {
             Assert.Throws<Exception>(() => Translate.Get(() => "Test", new En()));
+        }
+
+        [NonParallelizable]
+        [Test]
+        public void TranslateConfigure_shouldCreateFolderWithFiles()
+        {
+            var path = Path.Combine(Environment.CurrentDirectory, "i18n");
+            List<ITranslate> tranlateClasses = new List<ITranslate>()
+                {new UserManager.NewUserRegistration(), new UserManager()};
+            var supportedLanguages = new List<Language>() { new Pl(), new En(), new De() };
+            var ovverideTranslationFileIfExists = true;
+
+            Translate.Configure(path, tranlateClasses, supportedLanguages, ovverideTranslationFileIfExists);
+
+            var files = new DirectoryInfo(path).GetFiles();
+            Assert.True(files.Length == supportedLanguages.Count);
         }
     }
 }

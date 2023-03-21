@@ -5,6 +5,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using InheritedMapper;
 using ITBees.Models.Languages;
+using ITBees.Translations.Interfaces;
 
 namespace ITBees.Translations
 {
@@ -54,6 +55,23 @@ namespace ITBees.Translations
         public static void ClearTranslations()
         {
             AllTranslations.Clear();
+        }
+
+        /// <summary>
+        /// Allows to create translation files in form of json (ie. en.json, de.json etc...)
+        /// </summary>
+        /// <param name="path">Enter path to folder where generated translations will be stored</param>
+        /// <param name="tranlateClasses">Give all translation classes to be generated, remember that all this classes have to implement marker interface ITranslate and has specific structure described in documentation</param>
+        /// <param name="supportedLanguages">Enter list of languages supported, so there will be corresponding json files generated ie en.json, de.json etc.</param>
+        /// <param name="overrideTranslationFileIfExists">If target file ie. en.json already exists on disk it will be overwritten with default values, so be aware of possible data loss</param>
+        /// <exception cref="NotImplementedException"></exception>
+        public static void Configure(string path, 
+            List<ITranslate> tranlateClasses, 
+            List<Language> supportedLanguages,
+            bool overrideTranslationFileIfExists)
+        {
+            var generator = new LanguageJsonGenerator(path, supportedLanguages);
+            generator.CreateFiles(tranlateClasses, overrideTranslationFileIfExists);
         }
     }
 }
