@@ -45,6 +45,12 @@ namespace ITBees.Translations
             throw new ArgumentException("Invalid expression", nameof(expression));
         }
 
+        public static string Get<T>(Expression<Func<T>> expression, string language)
+        {
+            var lang = new InheritedMapper.DerivedAsTFromStringClassResolver<Language>().GetInstance(language);
+            return Get<T>(expression, lang);
+        }
+
         public static void ClearTranslations()
         {
             AllTranslations.Clear();

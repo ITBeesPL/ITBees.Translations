@@ -16,6 +16,7 @@ namespace ITBees.Translations.UnitTests
             Translate.ClearTranslations();
         }
 
+        [NonParallelizable]
         [Test]
         public void Get_shouldReturnCorrectTranslatedValueForSpecifiedLanguage()
         {
@@ -31,6 +32,26 @@ namespace ITBees.Translations.UnitTests
             Translate.LoadFiles(languageFilesPath);
             
             var translatedTextInPolish = Translate.Get(() => ITBees.Translations.FAS.UserManager.NewUserRegistration.ToAddNewUserYouMustBeCompanyOwner, new Pl());
+
+            Assert.True(translatedTextInPolish == polishTranslationValue, $"Expected translation was : {polishTranslationKeyAndValue}, but received {translatedTextInPolish}");
+        }
+
+        [NonParallelizable]
+        [Test]
+        public void Get_shouldReturnCorrectTranslatedValueForSpecifiedLanguageInString()
+        {
+            Translate.ClearTranslations();
+            var languageFilesPath = Path.Combine(Environment.CurrentDirectory, "i18n");
+            var generator = new LanguageJsonGenerator(languageFilesPath,
+                new List<Language>() { new En(), new Pl() });
+
+            generator.CreateFiles(new List<ITranslate>() { new UserManager(), new TranslateSampleTestClass() });
+
+            var polishTranslationValue = ReplaceTestValuesInTranslatedFileForSimulatingPolishTranslation(languageFilesPath, out var polishTranslationKeyAndValue);
+
+            Translate.LoadFiles(languageFilesPath);
+
+            var translatedTextInPolish = Translate.Get(() => ITBees.Translations.FAS.UserManager.NewUserRegistration.ToAddNewUserYouMustBeCompanyOwner, "pl");
 
             Assert.True(translatedTextInPolish == polishTranslationValue, $"Expected translation was : {polishTranslationKeyAndValue}, but received {translatedTextInPolish}");
         }
