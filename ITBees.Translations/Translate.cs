@@ -31,7 +31,7 @@ namespace ITBees.Translations
         public static string Get<T>(Expression<Func<T>> expression, Language language)
         {
             if (AllTranslations.Any() == false)
-                throw new Exception("You must load translation files firs, use method : Translate.LoadFiles(path);");
+                throw new Exception(ITBees.Translations.Translations.TranslateMessages.YouMustLoadTranslationFilesFirst);
 
             if (expression.Body is MemberExpression memberExpression)
             {
@@ -43,7 +43,7 @@ namespace ITBees.Translations
                 return translation.First().Value;
             }
 
-            throw new ArgumentException("Invalid expression", nameof(expression));
+            throw new ArgumentException(ITBees.Translations.Translations.TranslateMessages.InvalidExpression, nameof(expression));
         }
 
         public static string Get<T>(Expression<Func<T>> expression, string language)
