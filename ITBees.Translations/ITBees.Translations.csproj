@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ITBees.BaseServices" Version="5.0.9" />
+    <PackageReference Include="ITBees.BaseServices" Version="5.0.17" />
     <PackageReference Include="ITBees.Models" Version="5.0.15" />
     <PackageReference Include="ITBeesPL.InheritedMapper" Version="5.0.9" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
