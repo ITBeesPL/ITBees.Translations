@@ -18,7 +18,7 @@ namespace ITBees.Translations.Services
         }
         public string GetTranslation(string key, Language lang, List<ReplaceableValue> replaceableValues = null)
         {
-            var translation = _roRepoRuntimeTranslation.GetData(x => x.TranslationKey == key && x.LanguageId == lang.Id).ToList();
+            var translation = _roRepoRuntimeTranslation.GetData(x => x.BasePhrase.Phrase == key && x.LanguageId == lang.Id).ToList();
             if (translation.Count > 1)
             {
                 throw new Exception("To many translation for selected key");
