@@ -27,7 +27,7 @@ namespace ITBees.Translations.UnitTests
             generator.CreateFiles(new List<ITranslate>() {new Translations.TranslateMessages()}, true);
 
             var generatedFilesCount = new DirectoryInfo(languageFilesPath).GetFiles("*.json").Length;
-            Assert.True(generatedFilesCount == supportedLanguages.Count, $"Expected files to be generated : {supportedLanguages.Count} but was {generatedFilesCount}, debug folder : {languageFilesPath}");
+            Assert.That(generatedFilesCount == supportedLanguages.Count, $"Expected files to be generated : {supportedLanguages.Count} but was {generatedFilesCount}, debug folder : {languageFilesPath}");
         }
     }
 }
