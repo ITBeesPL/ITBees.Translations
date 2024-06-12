@@ -33,7 +33,7 @@ namespace ITBees.Translations.UnitTests
 
             var translatedTextInPolish = Translate.Get(() => TranslateSampleTestClass.TestField1, new Pl());
 
-            Assert.True(translatedTextInPolish == polishTranslationValue, $"Expected translation was : {polishTranslationKeyAndValue}, but received {translatedTextInPolish}");
+            Assert.That(translatedTextInPolish == polishTranslationValue, $"Expected translation was : {polishTranslationKeyAndValue}, but received {translatedTextInPolish}");
         }
 
         [NonParallelizable]
@@ -53,7 +53,7 @@ namespace ITBees.Translations.UnitTests
 
             var translatedTextInPolish = Translate.Get(() => TranslateSampleTestClass.TestField1, "pl");
 
-            Assert.True(translatedTextInPolish == polishTranslationValue, $"Expected translation was : {polishTranslationKeyAndValue}, but received {translatedTextInPolish}");
+            Assert.That(translatedTextInPolish == polishTranslationValue, $"Expected translation was : {polishTranslationKeyAndValue}, but received {translatedTextInPolish}");
         }
 
         private string ReplaceTestValuesInTranslatedFileForSimulatingPolishTranslation(string languageFilesPath,
@@ -93,7 +93,7 @@ namespace ITBees.Translations.UnitTests
             Translate.Configure(path, tranlateClasses, supportedLanguages, ovverideTranslationFileIfExists);
 
             var files = new DirectoryInfo(path).GetFiles();
-            Assert.True(files.Length == supportedLanguages.Count);
+            Assert.That(files.Length == supportedLanguages.Count);
         }
     }
 }
