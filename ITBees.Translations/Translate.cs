@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using InheritedMapper;
 using ITBees.Models.Languages;
 using ITBees.Translations.Interfaces;
@@ -48,6 +49,34 @@ namespace ITBees.Translations
             throw new ArgumentException(ITBees.Translations.Translations.TranslateMessages.InvalidExpression, nameof(expression));
         }
 
+        public static string Get<T>(Expression<Func<T>> expression, string fieldName, Language language)
+        {
+            if (!AllTranslations.Any())
+                throw new Exception(ITBees.Translations.Translations.TranslateMessages.YouMustLoadTranslationFilesFirst);
+
+            if (expression.Body is MemberExpression memberExpression)
+            {
+                var classType = memberExpression.Member.DeclaringType;
+                var translateKey = $"{classType.FullName}.{fieldName}".Replace("+", ".");
+
+                var dictionary = AllTranslations
+                    .FirstOrDefault(x => x.Key.GetType() == language.GetType()).Value;
+
+                if (dictionary != null && dictionary.ContainsKey(translateKey))
+                {
+                    return dictionary[translateKey];
+                }
+
+                var fieldValue = GetStaticFieldValue(classType, fieldName);
+                if (fieldValue != null)
+                    return fieldValue;
+
+                throw new Exception(ITBees.Translations.Translations.TranslateMessages.MissingTranslationForSpecifiedKey + $" key : {translateKey}, language :{language.Code}");
+            }
+
+            throw new ArgumentException(ITBees.Translations.Translations.TranslateMessages.InvalidExpression, nameof(expression));
+        }
+
         public static string Get<T>(Expression<Func<T>> expression, string language)
         {
             var lang = new InheritedMapper.DerivedAsTFromStringClassResolver<Language>().GetInstance(language);
@@ -57,6 +86,16 @@ namespace ITBees.Translations
         public static void ClearTranslations()
         {
             AllTranslations.Clear();
+        }
+
+        public static string GetStaticFieldValue(Type type, string fieldName)
+        {
+            FieldInfo field = type.GetField(fieldName, BindingFlags.Static | BindingFlags.Public);
+            if (field != null)
+            {
+                return field.GetValue(null)?.ToString();
+            }
+            return null;
         }
 
         /// <summary>
