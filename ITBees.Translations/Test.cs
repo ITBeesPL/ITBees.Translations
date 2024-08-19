@@ -6,6 +6,6 @@ class Test
 {
     public Test()
     {
-        var t = Translate.Get(typeof(TranslateMessages), "a", new Aa());
+        var t = Translate.Get(typeof(TranslateMessages), "a", new Aa(), true);
     }
 }
