@@ -29,18 +29,25 @@ namespace ITBees.Translations
                 }
         }
 
-        public static string Get(Type classType, string fieldName, Language language)
+        public static string Get(Type classType, string fieldName, Language language, bool returnOryginalValueIfTranslationNotFound)
         {
             if (!AllTranslations.Any())
                 throw new Exception(ITBees.Translations.Translations.TranslateMessages.YouMustLoadTranslationFilesFirst);
 
-            var translateKey = $"{classType.FullName}.{fieldName}".Replace("+", ".");
+            var translateKey = NormalizeKey($"{classType.FullName}.{fieldName}");
+
             var dictionary = AllTranslations
                 .FirstOrDefault(x => x.Key.GetType() == language.GetType()).Value;
 
-            if (dictionary != null && dictionary.ContainsKey(translateKey))
+            if (dictionary != null)
             {
-                return dictionary[translateKey];
+                foreach (var entry in dictionary)
+                {
+                    if (NormalizeKey(entry.Key) == translateKey)
+                    {
+                        return entry.Value;
+                    }
+                }
             }
 
             var fieldValue = GetStaticFieldValue(classType, fieldName);
@@ -49,13 +56,27 @@ namespace ITBees.Translations
                 return fieldValue;
             }
 
+            if (returnOryginalValueIfTranslationNotFound)
+                return fieldName;
+
             throw new Exception(ITBees.Translations.Translations.TranslateMessages.MissingTranslationForSpecifiedKey + $" key : {translateKey}, language :{language.Code}");
         }
 
-        public static string Get(Type classType, string fieldName, string language)
+        private static string NormalizeKey(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            return new string(input
+                .Where(c => char.IsLetterOrDigit(c))
+                .ToArray())
+                .ToLower();
+        }
+
+        public static string Get(Type classType, string fieldName, string language, bool returnOryginalValueIfTranslationNotFound)
         {
             var lang = new InheritedMapper.DerivedAsTFromStringClassResolver<Language>().GetInstance(language);
-            return Get(classType, fieldName, lang);
+            return Get(classType, fieldName, lang, returnOryginalValueIfTranslationNotFound);
         }
 
         public static string Get<T>(Expression<Func<T>> expression, Language language)
