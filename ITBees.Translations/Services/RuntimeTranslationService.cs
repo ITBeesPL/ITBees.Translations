@@ -13,16 +13,19 @@ namespace ITBees.Translations.Services
     {
         private readonly IReadOnlyRepository<RuntimeTranslation> _roRepoRuntimeTranslation;
         private readonly IReadOnlyRepository<BasePhrase> _roBasePhrase;
+        private readonly IWriteOnlyRepository<BasePhrase> _rwBasePhrase;
         private readonly IWriteOnlyRepository<RuntimeTranslation> _rwRepoRuntimeTranslation;
         private readonly IChatGptConnector _gptConnector;
 
         public RuntimeTranslationService(IReadOnlyRepository<RuntimeTranslation> roRepoRuntimeTranslation,
             IReadOnlyRepository<BasePhrase> roBasePhrase,
+            IWriteOnlyRepository<BasePhrase> rwBasePhrase,
             IWriteOnlyRepository<RuntimeTranslation> rwRepoRuntimeTranslation,
             IChatGptConnector gptConnector)
         {
             _roRepoRuntimeTranslation = roRepoRuntimeTranslation;
             _roBasePhrase = roBasePhrase;
+            _rwBasePhrase = rwBasePhrase;
             _rwRepoRuntimeTranslation = rwRepoRuntimeTranslation;
             _gptConnector = gptConnector;
         }
@@ -45,6 +48,11 @@ namespace ITBees.Translations.Services
                     $"Provide me with the translation into the language: {lang.Name} of this phrase: '{key}', return the answer as a string only, without additional comments, without characters, and without quotation marks");
 
                 var basePhrase = _roBasePhrase.GetData(x => x.Phrase == key).FirstOrDefault();
+
+                if (basePhrase == null)
+                {
+                    basePhrase = _rwBasePhrase.InsertData(new BasePhrase() { Phrase = key });
+                }
 
                 var savedNewTranslation = _rwRepoRuntimeTranslation.InsertData(new RuntimeTranslation()
                 {
