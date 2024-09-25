@@ -33,7 +33,7 @@ namespace ITBees.Translations.Services
                 using (var scope = _serviceProvider.CreateScope())
                 {
                     var roRepoRuntimeTranslation = scope.ServiceProvider.GetRequiredService<IReadOnlyRepository<RuntimeTranslation>>();
-                    var translations = roRepoRuntimeTranslation.GetData(x=>true)
+                    var translations = roRepoRuntimeTranslation.GetData(x=>true,x=>x.BasePhrase)
                         .Select(rt => new
                         {
                             Key = $"{rt.BasePhrase.Phrase}_{rt.LanguageId}",
