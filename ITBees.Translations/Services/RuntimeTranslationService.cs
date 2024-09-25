@@ -79,6 +79,8 @@ namespace ITBees.Translations.Services
                 var chatResult = await _gptConnector.AskChatGptAsync(
                     $"Provide me with the translation into the language: {lang.Name} of this phrase: '{key}', return the answer as a string only, without additional comments, without characters, and without quotation marks");
 
+                chatResult = RemoveQuotes(chatResult); //model gpt-4 still ignores this direct command and returns with quotations some results
+
                 var basePhrase = _roBasePhrase.GetData(x => x.Phrase == key).FirstOrDefault();
 
                 if (basePhrase == null)
@@ -100,6 +102,20 @@ namespace ITBees.Translations.Services
 
                 return chatResult;
             }
+        }
+        public static string RemoveQuotes(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+                return input;
+
+            // Sprawdzamy czy pierwszy i ostatni znak to "
+            if (input.StartsWith("\"") && input.EndsWith("\""))
+            {
+                // Usuwamy pierwszy i ostatni znak
+                return input.Substring(1, input.Length - 2);
+            }
+
+            return input;
         }
     }
 }
