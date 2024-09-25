@@ -33,6 +33,11 @@ namespace ITBees.Translations.Services
         public async Task<string> GetTranslation(string key, Language lang, bool askChatGptForTranslationIfMissing,
             List<ReplaceableValue> replaceableValues = null)
         {
+            if (string.IsNullOrEmpty(key) || key.Trim() == string.Empty)
+            {
+                return string.Empty;
+            }
+
             var translation = _roRepoRuntimeTranslation.GetData(x => x.BasePhrase.Phrase == key && x.LanguageId == lang.Id).ToList();
             if (translation.Count > 1)
             {
