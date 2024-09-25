@@ -15,20 +15,20 @@ namespace ITBees.Translations.Services
         private readonly IWriteOnlyRepository<BasePhrase> _rwBasePhrase;
         private readonly IWriteOnlyRepository<RuntimeTranslation> _rwRepoRuntimeTranslation;
         private readonly IChatGptConnector _gptConnector;
-        private readonly ICachedTranslationsSingleton _cachedTranslationsSingleton;
+        private readonly ICachedTranslationsSingleton _cachedTranslations;
 
         public RuntimeTranslationService(
             IReadOnlyRepository<BasePhrase> roBasePhrase,
             IWriteOnlyRepository<BasePhrase> rwBasePhrase,
             IWriteOnlyRepository<RuntimeTranslation> rwRepoRuntimeTranslation,
             IChatGptConnector gptConnector,
-            ICachedTranslationsSingleton cachedTranslationsSingleton)
+            ICachedTranslationsSingleton cachedTranslations)
         {
             _roBasePhrase = roBasePhrase;
             _rwBasePhrase = rwBasePhrase;
             _rwRepoRuntimeTranslation = rwRepoRuntimeTranslation;
             _gptConnector = gptConnector;
-            _cachedTranslationsSingleton = cachedTranslationsSingleton;
+            _cachedTranslations = cachedTranslations;
         }
 
         public async Task<string> GetTranslation(string key, Language lang, bool askChatGptForTranslationIfMissing,
@@ -39,7 +39,7 @@ namespace ITBees.Translations.Services
                 return string.Empty;
             }
 
-            var cachedTranslation = _cachedTranslationsSingleton.GetTranslation(key, lang.Id);
+            var cachedTranslation = _cachedTranslations.GetTranslation(key, lang.Id);
 
             if (cachedTranslation.Found)
             {
@@ -96,7 +96,7 @@ namespace ITBees.Translations.Services
 
                 _rwRepoRuntimeTranslation.InsertData(newTranslation);
 
-                _cachedTranslationsSingleton.AddTranslation(key, lang.Id, chatResult);
+                _cachedTranslations.AddTranslation(key, lang.Id, chatResult);
 
                 return chatResult;
             }
