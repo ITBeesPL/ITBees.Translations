@@ -6,13 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
     <Folder Include="SqlMigration\" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ITBees.BaseServices" Version="8.0.29" />
-    <PackageReference Include="ITBees.ChatGpt" Version="8.0.4" />
+    <PackageReference Include="ITBees.ChatGpt" Version="8.0.5" />
     <PackageReference Include="ITBees.Models" Version="8.0.47" />
     <PackageReference Include="ITBeesPL.InheritedMapper" Version="8.0.15" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />

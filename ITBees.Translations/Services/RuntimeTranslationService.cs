@@ -11,43 +11,70 @@ namespace ITBees.Translations.Services
 {
     public class RuntimeTranslationService : IRuntimeTranslationService
     {
-        private readonly IReadOnlyRepository<RuntimeTranslation> _roRepoRuntimeTranslation;
         private readonly IReadOnlyRepository<BasePhrase> _roBasePhrase;
         private readonly IWriteOnlyRepository<BasePhrase> _rwBasePhrase;
         private readonly IWriteOnlyRepository<RuntimeTranslation> _rwRepoRuntimeTranslation;
         private readonly IChatGptConnector _gptConnector;
+        private readonly ICachedTranslationsSingleton _cachedTranslationsSingleton;
 
-        public RuntimeTranslationService(IReadOnlyRepository<RuntimeTranslation> roRepoRuntimeTranslation,
+        public RuntimeTranslationService(
             IReadOnlyRepository<BasePhrase> roBasePhrase,
             IWriteOnlyRepository<BasePhrase> rwBasePhrase,
             IWriteOnlyRepository<RuntimeTranslation> rwRepoRuntimeTranslation,
-            IChatGptConnector gptConnector)
+            IChatGptConnector gptConnector,
+            ICachedTranslationsSingleton cachedTranslationsSingleton)
         {
-            _roRepoRuntimeTranslation = roRepoRuntimeTranslation;
             _roBasePhrase = roBasePhrase;
             _rwBasePhrase = rwBasePhrase;
             _rwRepoRuntimeTranslation = rwRepoRuntimeTranslation;
             _gptConnector = gptConnector;
+            _cachedTranslationsSingleton = cachedTranslationsSingleton;
         }
 
         public async Task<string> GetTranslation(string key, Language lang, bool askChatGptForTranslationIfMissing,
             List<ReplaceableValue> replaceableValues = null)
         {
-            if (string.IsNullOrEmpty(key) || key.Trim() == string.Empty)
+            if (string.IsNullOrWhiteSpace(key))
             {
                 return string.Empty;
             }
 
-            var translation = _roRepoRuntimeTranslation.GetData(x => x.BasePhrase.Phrase == key && x.LanguageId == lang.Id).ToList();
-            if (translation.Count > 1)
-            {
-                throw new Exception("To many translation for selected key");
-            }
+            var cachedTranslation = _cachedTranslationsSingleton.GetTranslation(key, lang.Id);
 
-            if (translation.Any() == false)
+            if (cachedTranslation.Found)
             {
-                if (askChatGptForTranslationIfMissing == false)
-                    throw new Exception($"There is no translation for key :{key} and language :{lang.Code}");
+                var result = cachedTranslation;
+
+                if (result.HasReplicableFields)
+                {
+                    if (replaceableValues == null)
+                    {
+                        throw new Exception($"Translation for Key :{key} requires replaceable values: {result.ReplicableFields}");
+                    }
+
+                    var targetTranslationResult = result.Value;
+                    var fieldsToBeReplaced = result.ReplicableFields.Split(';');
+                    foreach (var field in fieldsToBeReplaced)
+                    {
+                        var replacedValue = replaceableValues.FirstOrDefault(x => x.FieldName == field);
+                        if (replacedValue == null)
+                        {
+                            throw new Exception($"Missing replaceable value for field '{field}' in key '{key}'");
+                        }
+                        targetTranslationResult = targetTranslationResult.Replace($"[[{field}]]", replacedValue.FieldValue);
+                    }
+
+                    return targetTranslationResult;
+                }
+                else
+                {
+                    return result.Value;
+                }
+            }
+            else
+            {
+                if (!askChatGptForTranslationIfMissing)
+                    throw new Exception($"No translation for key: {key} and language: {lang.Code}");
 
                 var chatResult = await _gptConnector.AskChatGptAsync(
                     $"Provide me with the translation into the language: {lang.Name} of this phrase: '{key}', return the answer as a string only, without additional comments, without characters, and without quotation marks");
@@ -56,48 +83,22 @@ namespace ITBees.Translations.Services
 
                 if (basePhrase == null)
                 {
-                    basePhrase = _rwBasePhrase.InsertData(new BasePhrase() { Phrase = key });
+                    basePhrase = _rwBasePhrase.InsertData(new BasePhrase { Phrase = key });
                 }
 
-                var savedNewTranslation = _rwRepoRuntimeTranslation.InsertData(new RuntimeTranslation()
+                var newTranslation = new RuntimeTranslation
                 {
                     BasePhraseId = basePhrase.Id,
                     HasReplicableFields = false,
                     LanguageId = lang.Id,
                     TanslationValue = chatResult
-                });
+                };
 
-                translation = [savedNewTranslation];
-            }
+                _rwRepoRuntimeTranslation.InsertData(newTranslation);
 
-            var result = translation[0];
-            if (result.HasReplicableFields)
-            {
-                if (replaceableValues == null)
-                {
-                    throw new Exception($"Translation for Key :{key} need to be given with replaceable value : {result.ReplicableFields}");
-                }
+                _cachedTranslationsSingleton.AddTranslation(key, lang.Id, chatResult);
 
-                var targetTranslationResult = result.TanslationValue;
-                var replacedValuesCount = 0;
-                var fieldsToBeReplaced = result.ReplicableFields.Split(";");
-                foreach (string s in fieldsToBeReplaced)
-                {
-                    var replacedValue = replaceableValues.First(x => x.FieldName == s);
-                    replacedValuesCount++;
-                    targetTranslationResult.Replace($"[[{s}]]", replacedValue.FieldValue);
-                }
-
-                if (replacedValuesCount != fieldsToBeReplaced.Length)
-                {
-                    throw new Exception("Provided replace values count is different than expected values to be replaced in database dictionary");
-                }
-
-                return targetTranslationResult;
-            }
-            else
-            {
-                return result.TanslationValue;
+                return chatResult;
             }
         }
     }
