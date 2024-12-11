@@ -10,9 +10,9 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="ITBees.BaseServices" Version="8.0.57" />
-    <PackageReference Include="ITBees.ChatGpt" Version="8.0.8" />
-    <PackageReference Include="ITBees.Models" Version="8.0.66" />
+    <PackageReference Include="ITBees.BaseServices" Version="8.0.58" />
+    <PackageReference Include="ITBees.ChatGpt" Version="8.0.9" />
+    <PackageReference Include="ITBees.Models" Version="8.0.67" />
     <PackageReference Include="ITBeesPL.InheritedMapper" Version="8.0.15" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
