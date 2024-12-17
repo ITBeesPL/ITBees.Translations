@@ -10,7 +10,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <PackageReference Include="ITBees.BaseServices" Version="8.0.62" />
+    <PackageReference Include="ITBees.BaseServices" Version="8.0.64" />
     <PackageReference Include="ITBees.ChatGpt" Version="8.0.13" />
     <PackageReference Include="ITBees.Models" Version="8.0.71" />
     <PackageReference Include="ITBeesPL.InheritedMapper" Version="8.0.15" />
