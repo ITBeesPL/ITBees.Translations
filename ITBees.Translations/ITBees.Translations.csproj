@@ -25,7 +25,7 @@
 <!--    <ProjectReference Include="..\..\ITBees.Models\ITBees.Models\ITBees.Models.csproj" />-->
 <!--    <ProjectReference Include="..\..\InheritedMapper\InheritedMapper\InheritedMapper.csproj" />-->
 <!--    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />-->
-<!--    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />-->
+<!--    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.4" />-->
 <!--    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />-->
 <!--  </ItemGroup>-->
   
