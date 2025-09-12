@@ -29,10 +29,12 @@ namespace ITBees.Translations
                 }
         }
 
-        public static string Get(Type classType, string fieldName, Language language, bool returnOryginalValueIfTranslationNotFound)
+        public static string Get(Type classType, string fieldName, Language language,
+            bool returnOryginalValueIfTranslationNotFound)
         {
             if (!AllTranslations.Any())
-                throw new Exception(ITBees.Translations.Translations.TranslateMessages.YouMustLoadTranslationFilesFirst);
+                throw new Exception(ITBees.Translations.Translations.TranslateMessages
+                    .YouMustLoadTranslationFilesFirst);
 
             var translateKey = NormalizeKey($"{classType.FullName}.{fieldName}");
 
@@ -59,7 +61,8 @@ namespace ITBees.Translations
             if (returnOryginalValueIfTranslationNotFound)
                 return fieldName;
 
-            throw new Exception(ITBees.Translations.Translations.TranslateMessages.MissingTranslationForSpecifiedKey + $" key : {translateKey}, language :{language.Code}");
+            throw new Exception(ITBees.Translations.Translations.TranslateMessages.MissingTranslationForSpecifiedKey +
+                                $" key : {translateKey}, language :{language.Code}");
         }
 
         private static string NormalizeKey(string input)
@@ -68,12 +71,13 @@ namespace ITBees.Translations
                 return input;
 
             return new string(input
-                .Where(c => char.IsLetterOrDigit(c))
-                .ToArray())
+                    .Where(c => char.IsLetterOrDigit(c))
+                    .ToArray())
                 .ToLower();
         }
 
-        public static string Get(Type classType, string fieldName, string language, bool returnOryginalValueIfTranslationNotFound)
+        public static string Get(Type classType, string fieldName, string language,
+            bool returnOryginalValueIfTranslationNotFound)
         {
             var lang = new InheritedMapper.DerivedAsTFromStringClassResolver<Language>().GetInstance(language);
             return Get(classType, fieldName, lang, returnOryginalValueIfTranslationNotFound);
@@ -82,25 +86,35 @@ namespace ITBees.Translations
         public static string Get<T>(Expression<Func<T>> expression, Language language)
         {
             if (AllTranslations.Any() == false)
-                throw new Exception(ITBees.Translations.Translations.TranslateMessages.YouMustLoadTranslationFilesFirst);
+                throw new Exception(ITBees.Translations.Translations.TranslateMessages
+                    .YouMustLoadTranslationFilesFirst);
 
             if (expression.Body is MemberExpression memberExpression)
             {
-                var translateKey = $"{memberExpression.Member.DeclaringType.FullName}.{memberExpression.Member.Name}".Replace("+",".");
+                var translateKey = $"{memberExpression.Member.DeclaringType.FullName}.{memberExpression.Member.Name}"
+                    .Replace("+", ".");
                 var dictionary = AllTranslations
                     .FirstOrDefault(x => x.Key.GetType() == language.GetType()).Value;
                 var translation = dictionary
                     .Where(val => val.Key == translateKey);
                 if (translation.Count() == 0)
-                    throw new Exception(ITBees.Translations.Translations.TranslateMessages.MissingTranslationForSpecifiedKey + $" key : {translateKey}, language :{language.Code}");
+                    throw new Exception(
+                        ITBees.Translations.Translations.TranslateMessages.MissingTranslationForSpecifiedKey +
+                        $" key : {translateKey}, language :{language.Code}");
                 return translation.First().Value;
             }
 
-            throw new ArgumentException(ITBees.Translations.Translations.TranslateMessages.InvalidExpression, nameof(expression));
+            throw new ArgumentException(ITBees.Translations.Translations.TranslateMessages.InvalidExpression,
+                nameof(expression));
         }
 
         public static string Get<T>(Expression<Func<T>> expression, string language)
         {
+            if (language == null)
+            {
+                throw new ArgumentNullException($"You must provide language for translation " + expression.Body.ToString());
+            }
+
             var lang = new InheritedMapper.DerivedAsTFromStringClassResolver<Language>().GetInstance(language);
             return Get<T>(expression, lang);
         }
@@ -113,11 +127,12 @@ namespace ITBees.Translations
         public static string Get<T>(Expression<Func<T>> expression, string fieldName, Language language)
         {
             if (!AllTranslations.Any())
-                throw new Exception(ITBees.Translations.Translations.TranslateMessages.YouMustLoadTranslationFilesFirst);
+                throw new Exception(ITBees.Translations.Translations.TranslateMessages
+                    .YouMustLoadTranslationFilesFirst);
 
             if (expression.Body is MemberExpression memberExpression)
             {
-                var classType = memberExpression.Member.DeclaringType; 
+                var classType = memberExpression.Member.DeclaringType;
                 var translateKey = $"{classType.FullName}.{fieldName}".Replace("+", ".");
 
                 var dictionary = AllTranslations
@@ -132,10 +147,13 @@ namespace ITBees.Translations
                 if (fieldValue != null)
                     return fieldValue;
 
-                throw new Exception(ITBees.Translations.Translations.TranslateMessages.MissingTranslationForSpecifiedKey + $" key : {translateKey}, language :{language.Code}");
+                throw new Exception(
+                    ITBees.Translations.Translations.TranslateMessages.MissingTranslationForSpecifiedKey +
+                    $" key : {translateKey}, language :{language.Code}");
             }
 
-            throw new ArgumentException(ITBees.Translations.Translations.TranslateMessages.InvalidExpression, nameof(expression));
+            throw new ArgumentException(ITBees.Translations.Translations.TranslateMessages.InvalidExpression,
+                nameof(expression));
         }
 
         public static string Get<T>(Expression<Func<T>> expression, string fieldName, string language)
@@ -172,8 +190,8 @@ namespace ITBees.Translations
         /// <param name="supportedLanguages">Enter list of languages supported, so there will be corresponding json files generated ie en.json, de.json etc.</param>
         /// <param name="overrideTranslationFileIfExists">If target file ie. en.json already exists on disk it will be overwritten with default values, so be aware of possible data loss</param>
         /// <exception cref="NotImplementedException"></exception>
-        public static void Configure(string path, 
-            List<ITranslate> tranlateClasses, 
+        public static void Configure(string path,
+            List<ITranslate> tranlateClasses,
             List<Language> supportedLanguages,
             bool overrideTranslationFileIfExists)
         {
