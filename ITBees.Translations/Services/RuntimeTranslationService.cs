@@ -6,6 +6,7 @@ using ITBees.Interfaces.Repository;
 using ITBees.Models.Languages;
 using ITBees.Translations.Interfaces;
 using ITBees.Translations.SqlMigration;
+using Microsoft.Extensions.Logging;
 
 namespace ITBees.Translations.Services
 {
@@ -16,19 +17,25 @@ namespace ITBees.Translations.Services
         private readonly IWriteOnlyRepository<RuntimeTranslation> _rwRepoRuntimeTranslation;
         private readonly IChatGptConnector _gptConnector;
         private readonly ICachedTranslationsSingleton _cachedTranslations;
+        private readonly ILogger<RuntimeTranslationService> _logger;
+
+        private const string LegacyFailedCallAnswerPrefix = "API call failed with status code:";
+        private const string LegacyEmptyResponseAnswer = "Empty response from API.";
 
         public RuntimeTranslationService(
             IReadOnlyRepository<BasePhrase> roBasePhrase,
             IWriteOnlyRepository<BasePhrase> rwBasePhrase,
             IWriteOnlyRepository<RuntimeTranslation> rwRepoRuntimeTranslation,
             IChatGptConnector gptConnector,
-            ICachedTranslationsSingleton cachedTranslations)
+            ICachedTranslationsSingleton cachedTranslations,
+            ILogger<RuntimeTranslationService> logger = null)
         {
             _roBasePhrase = roBasePhrase;
             _rwBasePhrase = rwBasePhrase;
             _rwRepoRuntimeTranslation = rwRepoRuntimeTranslation;
             _gptConnector = gptConnector;
             _cachedTranslations = cachedTranslations;
+            _logger = logger;
         }
 
         public async Task<string> GetTranslation(string key, Language lang, bool askChatGptForTranslationIfMissing,
@@ -76,10 +83,26 @@ namespace ITBees.Translations.Services
                 if (!askChatGptForTranslationIfMissing)
                     throw new Exception($"No translation for key: {key} and language: {lang.Code}");
 
-                var chatResult = await _gptConnector.AskChatGptAsync(
-                    $"Provide me with the translation into the language: {lang.Name} of this phrase: '{key}', return the answer as a string only, without additional comments, without characters, and without quotation marks");
+                string chatResult;
+                try
+                {
+                    chatResult = await _gptConnector.AskChatGptAsync(
+                        $"Provide me with the translation into the language: {lang.Name} of this phrase: '{key}', return the answer as a string only, without additional comments, without characters, and without quotation marks");
+                }
+                catch (Exception e)
+                {
+                    // A failed call must never be persisted or cached - return the source phrase, so the next request retries
+                    _logger?.LogError(e, "ChatGPT translation of '{Key}' to language '{LanguageCode}' failed, returning the source phrase", key, lang.Code);
+                    return key;
+                }
 
                 chatResult = RemoveQuotes(chatResult); //model gpt-4 still ignores this direct command and returns with quotations some results
+
+                if (!IsUsableTranslation(chatResult))
+                {
+                    _logger?.LogError("ChatGPT returned no usable translation of '{Key}' to language '{LanguageCode}': '{ChatResult}', returning the source phrase", key, lang.Code, chatResult);
+                    return key;
+                }
 
                 var basePhrase = _roBasePhrase.GetData(x => x.Phrase == key).FirstOrDefault();
 
@@ -103,6 +126,17 @@ namespace ITBees.Translations.Services
                 return chatResult;
             }
         }
+
+        private static bool IsUsableTranslation(string chatResult)
+        {
+            if (string.IsNullOrWhiteSpace(chatResult))
+                return false;
+
+            // ITBees.ChatGpt up to 8.0.42 returned these texts as the answer instead of throwing
+            return !chatResult.StartsWith(LegacyFailedCallAnswerPrefix, StringComparison.Ordinal)
+                   && chatResult != LegacyEmptyResponseAnswer;
+        }
+
         public static string RemoveQuotes(string input)
         {
             if (string.IsNullOrEmpty(input))
